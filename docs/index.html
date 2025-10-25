@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .tabs {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .tabs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-weight: 500;
+            color: #64748b;
+        }
+        
+        .tab:hover {
+            background: #f8fafc;
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f8fafc;
+        }
+        
+        .content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .card h3 {
+            color: #334155;
+            font-size: 1.25rem;
+            margin: 1.5rem 0 1rem 0;
+            font-weight: 600;
+        }
+        
+        .card p {
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+        
+        .architecture-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+        
+        .arch-layer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        
+        .arch-component {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 1.25rem 2rem;
+            border-radius: 8px;
+            min-width: 180px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+        
+        .arch-component:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .arch-component .title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .arch-component .subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+        
+        .arch-component.highlight {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        }
+        
+        .arch-component.cache {
+            border-color: #dc143c;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+        }
+        
+        .arch-component.fallback {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+            border-style: dashed;
+        }
+        
+        .connection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .arrow {
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+            position: relative;
+        }
+        
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: -3px;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 8px solid #94a3b8;
+        }
+        
+        .label {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .fallback-flow {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fff8f8;
+            border-radius: 8px;
+            border: 2px dashed #ff6b6b;
+        }
+        
+        .fallback-arrow {
+            color: #ff6b6b;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .note {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .note strong {
+            color: #1e40af;
+        }
+        
+        .warning {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .warning strong {
+            color: #b45309;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .tech-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .tech-item h4 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tech-item p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        li {
+            margin: 0.5rem 0;
+            color: #475569;
+        }
+        
+        code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #dc143c;
+            font-size: 0.9em;
+        }
+        
+        .footer-notes {
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-notes h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-notes ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-notes li {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #cbd5e1;
+        }
+        
+        .footer-notes li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>System Architecture Documentation</h1>
+            <p>Comprehensive guide to the distributed message queue processing system</p>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <div class="tabs-container">
+            <div class="tab active" onclick="showTab('overview')">Overview</div>
+            <div class="tab" onclick="showTab('problem')">Problem Statement</div>
+            <div class="tab" onclick="showTab('architecture')">Architecture</div>
+            <div class="tab" onclick="showTab('components')">Components</div>
+            <div class="tab" onclick="showTab('dataflow')">Data Flow</div>
+            <div class="tab" onclick="showTab('fallback')">Fallback Mechanism</div>
+            <div class="tab" onclick="showTab('implementation')">Implementation</div>
+        </div>
+    </div>
+    
+    <div class="content">
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="card">
+                <h2>📋 Executive Summary</h2>
+                <p>This document outlines a robust, scalable distributed system architecture designed to handle high-throughput message processing with fault tolerance and automatic retry capabilities.</p>
+                
+                <h3>Key Highlights</h3>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <h4>🚀 High Performance</h4>
+                        <p>Redis-based queue for sub-millisecond message processing</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>🛡️ Fault Tolerant</h4>
+                        <p>Automatic fallback and retry mechanism for failed operations</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>📊 Multi-Database</h4>
+                        <p>Support for MySQL, Elasticsearch, and MongoDB</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>⚡ Asynchronous</h4>
+                        <p>Decoupled producer-consumer architecture</p>
+                    </div>
+                </div>
+                
+                <h3>System Metrics</h3>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                    <tr>
+                        <td>Throughput</td>
+                        <td>10,000+ msg/sec</td>
+                        <td>Messages processed per second</td>
+                    </tr>
+                    <tr>
+                        <td>Latency</td>
+                        <td>&lt; 50ms</td>
+                        <td>End-to-end processing time</td>
+                    </tr>
+                    <tr>
+                        <td>Availability</td>
+                        <td>99.9%</td>
+                        <td>System uptime target</td>
+                    </tr>
+                    <tr>
+                        <td>Data Loss</td>
+                        <td>0%</td>
+                        <td>With fallback mechanism</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Problem Statement Tab -->
+        <div id="problem" class="tab-content">
+            <div class="card">
+                <h2>🎯 Problem Statement</h2>
+                
+                <h3>Business Challenge</h3>
+                <p>Modern web applications face several critical challenges when handling user requests and data persistence:</p>
+                
+                <ul>
+                    <li><strong>High Traffic Volumes:</strong> Systems must handle thousands of concurrent user requests without degradation</li>
+                    <li><strong>Response Time Requirements:</strong> Users expect instant feedback (&lt;100ms response time)</li>
+                    <li><strong>Database Bottlenecks:</strong> Direct database writes can slow down user-facing operations</li>
+                    <li><strong>Data Reliability:</strong> Critical data cannot be lost due to temporary failures</li>
+                    <li><strong>System Resilience:</strong> Architecture must handle partial failures gracefully</li>
+                </ul>
+                
+                <h3>Technical Challenges</h3>
+                
+                <div class="warning">
+                    <strong>Challenge 1: Synchronous Processing</strong>
+                    <p>Traditional synchronous request-response patterns create tight coupling between frontend and database operations, leading to slow response times and poor scalability.</p>
+                </div>
+                
+                <div class="warning">
+                    <strong>Challenge 2: Database Failures</strong>
+                    <p>Database outages, network issues, or temporary unavailability can result in data loss and failed user operations if not handled properly.</p>
+                </div>
+                
+                <div class="warning">
+                    <strong>Challenge 3: Scalability Limits</strong>
+                    <p>Direct database connections don't scale well. Each connection consumes resources, limiting concurrent operation capacity.</p>
+                </div>
+                
+                <h3>Solution Requirements</h3>
+                <ol>
+                    <li>Decouple request handling from data persistence</li>
+                    <li>Implement asynchronous processing pipeline</li>
+                    <li>Ensure zero data loss even during failures</li>
+                    <li>Provide automatic retry mechanism</li>
+                    <li>Support multiple database backends</li>
+                    <li>Maintain high throughput and low latency</li>
+                    <li>Enable horizontal scalability</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Architecture Tab -->
+        <div id="architecture" class="tab-content">
+            <div class="card">
+                <h2>🏗️ System Architecture</h2>
+                
+                <div class="architecture-diagram">
+                    <div class="arch-layer">
+                        <div class="arch-component">
+                            <div class="title">👤 User</div>
+                            <div class="subtitle">End User</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component">
+                            <div class="title">🖥️ Frontend</div>
+                            <div class="subtitle">Web Application</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component highlight">
+                            <div class="title">⚙️ Nginx</div>
+                            <div class="subtitle">Reverse Proxy / Load Balancer</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component highlight">
+                            <div class="title">📨 Enqueue System</div>
+                            <div class="subtitle">Python / IncAE / WAF</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                        <div class="label">RPUSH</div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component cache">
+                            <div class="title">💾 Redis</div>
+                            <div class="subtitle">Message Queue</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                        <div class="label">LPOP</div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component highlight">
+                            <div class="title">🔍 Dequeue System</div>
+                            <div class="subtitle">Query: Lcu/cus / IncAE<br>Pyhren / Lua / LGo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection">
+                        <div class="arrow"></div>
+                    </div>
+                    
+                    <div class="arch-layer">
+                        <div class="arch-component">
+                            <div class="title">🗄️ MySQL</div>
+                            <div class="subtitle">Relational DB</div>
+                        </div>
+                        <div class="arch-component">
+                            <div class="title">🔎 Elasticsearch</div>
+                            <div class="subtitle">Search Engine</div>
+                        </div>
+                        <div class="arch-component">
+                            <div class="title">🍃 MongoDB</div>
+                            <div class="subtitle">Document DB</div>
+                        </div>
+                    </div>
+                    
+                    <div class="fallback-flow">
+                        <span style="color: #64748b;">On Database Failure</span>
+                        <span class="fallback-arrow">↺</span>
+                        <div class="arch-component fallback">
+                            <div class="title">🔄 Fallback Handler</div>
+                            <div class="subtitle">Retry Logic → RPUSH</div>
+                        </div>
+                        <span class="fallback-arrow">↻</span>
+                        <span style="color: #64748b;">Back to Redis</span>
+                    </div>
+                </div>
+                
+                <div class="note">
+                    <strong>Note:</strong> The architecture follows a producer-consumer pattern with Redis acting as the message broker. The fallback mechanism ensures no data loss during failures.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Components Tab -->
+        <div id="components" class="tab-content">
+            <div class="card">
+                <h2>🔧 System Components</h2>
+                
+                <h3>1. Frontend Layer</h3>
+                <p><strong>Technology:</strong> HTML, CSS, JavaScript (React/Vue/Angular)</p>
+                <p><strong>Responsibility:</strong> User interface and client-side logic</p>
+                <ul>
+                    <li>Captures user interactions and form submissions</li>
+                    <li>Sends HTTP requests to backend services</li>
+                    <li>Displays real-time updates and notifications</li>
+                    <li>Handles client-side validation</li>
+                </ul>
+                
+                <h3>2. Nginx (Reverse Proxy)</h3>
+                <p><strong>Technology:</strong> Nginx Web Server</p>
+                <p><strong>Responsibility:</strong> Traffic management and load balancing</p>
+                <ul>
+                    <li>Load balancing across multiple backend instances</li>
+                    <li>SSL/TLS termination</li>
+                    <li>Request routing and URL rewriting</li>
+                    <li>Static content serving</li>
+                    <li>Rate limiting and DDoS protection</li>
+                </ul>
+                
+                <h3>3. Enqueue System (Producer)</h3>
+                <p><strong>Technology:</strong> Python, IncAE, WAF (Web Application Firewall)</p>
+                <p><strong>Responsibility:</strong> Request processing and message production</p>
+                <ul>
+                    <li>Receives HTTP requests from Nginx</li>
+                    <li>Validates and sanitizes input data</li>
+                    <li>Applies business logic and transformations</li>
+                    <li>Serializes data into message format</li>
+                    <li>Pushes messages to Redis queue using <code>RPUSH</code></li>
+                    <li>Returns immediate response to client</li>
+                </ul>
+                
+                <h3>4. Redis (Message Queue)</h3>
+                <p><strong>Technology:</strong> Redis (In-memory data store)</p>
+                <p><strong>Responsibility:</strong> Message broker and temporary storage</p>
+                <ul>
+                    <li>Acts as FIFO (First In, First Out) queue</li>
+                    <li>Provides high-performance message storage</li>
+                    <li>Supports atomic operations (RPUSH, LPOP)</li>
+                    <li>Enables asynchronous communication</li>
+                    <li>Offers persistence options (RDB, AOF)</li>
+                </ul>
+                
+                <h3>5. Dequeue System (Consumer)</h3>
+                <p><strong>Technology:</strong> Multiple languages - Lcu/cus, IncAE, Pyhren (Python), Lua, LGo (Go)</p>
+                <p><strong>Responsibility:</strong> Message consumption and processing</p>
+                <ul>
+                    <li>Continuously polls Redis using <code>LPOP</code></li>
+                    <li>Deserializes message data</li>
+                    <li>Executes business logic and queries</li>
+                    <li>Writes data to appropriate database</li>
+                    <li>Handles errors and triggers fallback on failure</li>
+                    <li>Logs processing metrics and status</li>
+                </ul>
+                
+                <h3>6. Database Layer</h3>
+                <p><strong>Technologies:</strong> MySQL, Elasticsearch, MongoDB</p>
+                
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <h4>MySQL</h4>
+                        <p>Relational database for structured transactional data with ACID compliance</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Elasticsearch</h4>
+                        <p>Search and analytics engine for full-text search and log aggregation</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>MongoDB</h4>
+                        <p>Document database for flexible, schema-less data storage</p>
+                    </div>
+                </div>
+                
+                <h3>7. Fallback Handler</h3>
+                <p><strong>Technology:</strong> Integrated with Dequeue System</p>
+                <p><strong>Responsibility:</strong> Error recovery and retry logic</p>
+                <ul>
+                    <li>Catches database operation failures</li>
+                    <li>Implements exponential backoff strategy</li>
+                    <li>Re-queues failed messages using <code>RPUSH</code></li>
+                    <li>Tracks retry attempts and failure counts</li>
+                    <li>Routes to Dead Letter Queue after max retries</li>
+                    <li>Sends alerts for persistent failures</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Data Flow Tab -->
+        <div id="dataflow" class="tab-content">
+            <div class="card">
+                <h2>🔄 Data Flow Process</h2>
+                
+                <h3>Normal Flow (Success Path)</h3>
+                <ol>
+                    <li><strong>User Interaction:</strong> User submits a form or triggers an action in the frontend</li>
+                    <li><strong>HTTP Request:</strong> Frontend sends POST/PUT request to backend API</li>
+                    <li><strong>Load Balancing:</strong> Nginx receives request and routes to available Enqueue instance</li>
+                    <li><strong>Request Validation:</strong> Enqueue system validates and processes the request</li>
+                    <li><strong>Message Creation:</strong> Data is serialized into a message format (JSON/Protocol Buffer)</li>
+                    <li><strong>Queue Push:</strong> Message is pushed to Redis queue using <code>RPUSH</code> command</li>
+                    <li><strong>Immediate Response:</strong> HTTP 202 (Accepted) returned to client immediately</li>
+                    <li><strong>Message Consumption:</strong> Dequeue system polls Redis using <code>LPOP</code></li>
+                    <li><strong>Data Processing:</strong> Message is deserialized and business logic applied</li>
+                    <li><strong>Database Write:</strong> Data is written to appropriate database (MySQL/ES/MongoDB)</li>
+                    <li><strong>Completion:</strong> Transaction logged and monitoring metrics updated</li>
+                </ol>
+                
+                <h3>Failure Flow (Error Path)</h3>
+                <ol>
+                    <li><strong>Database Failure:</strong> Write operation to database fails (timeout, connection error, etc.)</li>
+                    <li><strong>Error Detection:</strong> Dequeue system catches the exception</li>
+                    <li><strong>Fallback Trigger:</strong> Fallback handler is invoked with error context</li>
+                    <li><strong>Retry Decision:</strong> System checks retry count and applies backoff strategy</li>
+                    <li><strong>Re-queue:</strong> Message is pushed back to Redis using <code>RPUSH</code></li>
+                    <li><strong>Retry Attempt:</strong> Message is picked up again after delay</li>
+                    <li><strong>Success/Failure:</strong> Either succeeds or repeats until max retries</li>
+                    <li><strong>Dead Letter Queue:</strong> After max retries, message moved to DLQ for manual review</li>
+                </ol>
+                
+                <h3>Message Format</h3>
+                <div class="note">
+                    <strong>Example Message Structure:</strong>
+                    <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 4px; overflow-x: auto; margin-top: 0.5rem;">
+{
+  "message_id": "uuid-1234-5678",
+  "timestamp": "2025-10-25T10:30:00Z",
+  "type": "user_registration",
+  "payload": {
+    "user_id": 12345,
+    "email": "user@example.com",
+    "metadata": {...}
+  },
+  "retry_count": 0,
+  "max_retries": 3
+}</pre>
+                </div>
+                
+                <h3>Performance Considerations</h3>
+                <table>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Strategy</th>
+                        <th>Benefit</th>
+                    </tr>
+                    <tr>
+                        <td>Queue Size</td>
+                        <td>Monitor and alert on queue depth</td>
+                        <td>Prevent memory overflow</td>
+                    </tr>
+                    <tr>
+                        <td>Message TTL</td>
+                        <td>Set expiration on messages</td>
+                        <td>Avoid stale data processing</td>
+                    </tr>
+                    <tr>
+                        <td>Batch Processing</td>
+                        <td>Process multiple messages together</td>
+                        <td>Improve database write efficiency</td>
+                    </tr>
+                    <tr>
+                        <td>Connection Pooling</td>
+                        <td>Reuse database connections</td>
+                        <td>Reduce connection overhead</td>
+                    </tr>
+                    <tr>
+                        <td>Horizontal Scaling</td>
+                        <td>Multiple consumer instances</td>
+                        <td>Increase throughput linearly</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Fallback Mechanism Tab -->
+        <div id="fallback" class="tab-content">
+            <div class="card">
+                <h2>🔄 Fallback & Retry Mechanism</h2>
+                
+                <h3>Why Fallback is Critical</h3>
+                <p>In distributed systems, failures are inevitable. Databases can become temporarily unavailable due to:</p>
+                <ul>
+                    <li>Network partitions or timeouts</li>
+                    <li>Database maintenance or upgrades</li>
+                    <li>Resource exhaustion (CPU, memory, disk)</li>
+                    <li>Lock contention or deadlocks</li>
+                    <li>Replication lag</li>
+                </ul>
+                
+                <p>Without a fallback mechanism, these failures would result in permanent data loss and poor user experience.</p>
+                
+                <h3>Fallback Strategy</h3>
+                
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <h4>1. Immediate Retry</h4>
+                        <p>First attempt happens immediately for transient errors</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>2. Exponential Backoff</h4>
+                        <p>Wait time increases: 1s, 2s, 4s, 8s between retries</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>3. Re-queue</h4>
+                        <p>Failed messages pushed back to Redis queue</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>4. Dead Letter Queue</h4>
+                        <p>After max retries, move to DLQ for investigation</p>
+                    </div>
+                </div>
+                
+                <h3>Implementation Details</h3>
+                
+                <div class="note">
+                    <strong>Retry Configuration:</strong>
+                    <ul>
+                        <li><strong>Max Retries:</strong> 3-5 attempts (configurable)</li>
+                        <li><strong>Backoff Strategy:</strong> Exponential with jitter</li>
+                        <li><strong>Timeout:</strong> 5 seconds per database operation</li>
+                        <li><strong>Circuit Breaker:</strong> Open circuit after 10 consecutive failures</li>
+                    </ul>
+                </div>
+                
+                <h3>Error Classification</h3>
+                <table>
+                    <tr>
+                        <th>Error Type</th>
+                        <th>Retry?</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>Network Timeout</td>
+                        <td>✅ Yes</td>
+                        <td>Retry with backoff</td>
+                    </tr>
+                    <tr>
+                        <td>Connection Refused</td>
+                        <td>✅ Yes</td>
+                        <td>Retry with backoff</td>
+                    </tr>
+                    <tr>
+                        <td>Deadlock</td>
+                        <td>✅ Yes</td>
+                        <td>Immediate retry</td>
+                    </tr>
+                    <tr>
+                        <td>Validation Error</td>
+                        <td>❌ No</td>
+                        <td>Log and move to DLQ</td>
+                    </tr>
+                    <tr>
+                        <td>Duplicate Key</td>
+                        <td>❌ No</td>
+                        <td>Log and discard</td>
+                    </tr>
+                    <tr>
+                        <td>Disk Full</td>
+                        <td>✅ Yes</td>
+                        <td>Alert ops, retry after delay</td>
+                    </tr>
+                </table>
+                
+                <h3>Monitoring & Alerting</h3>
+                <ul>
+                    <li><strong>Queue Depth Alert:</strong> Trigger when queue size exceeds threshold</li>
+                    <li><strong>Retry Rate:</strong> Monitor percentage of messages requiring retry</li>
+                    <li><strong>DLQ Size:</strong> Alert when dead letter queue grows</li>
+                    <li><strong>Processing Lag:</strong> Track time between enqueue and successful processing</li>
+                    <li><strong>Error Rate:</strong> Dashboard showing error types and frequencies</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Important:</strong> Always include message metadata (timestamp, retry count, error history) when re-queuing to prevent infinite loops and enable debugging.
+                </div>
+                
+                <h3>Circuit Breaker Pattern</h3>
+                <p>To prevent cascading failures, implement a circuit breaker:</p>
+                <ol>
+                    <li><strong>Closed State:</strong> Normal operation, requests pass through</li>
+                    <li><strong>Open State:</strong> After threshold failures, stop sending requests</li>
+                    <li><strong>Half-Open State:</strong> After timeout, allow test requests</li>
+                    <li><strong>Recovery:</strong> If test succeeds, return to closed state</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Implementation Tab -->
+        <div id="implementation" class="tab-content">
+            <div class="card">
+                <h2>💻 Implementation Guide</h2>
+                
+                <h3>Technology Stack</h3>
+                <table>
+                    <tr>
+                        <th>Component</th>
+                        <th>Technology</th>
+                        <th>Version</th>
+                        <th>Purpose</th>
+                    </tr>
+                    <tr>
+                        <td>Reverse Proxy</td>
+                        <td>Nginx</td>
+                        <td>1.24+</td>
+                        <td>Load balancing, SSL termination</td>
+                    </tr>
+                    <tr>
+                        <td>Enqueue Service</td>
+                        <td>Python</td>
+                        <td>3.11+</td>
+                        <td>Request handling, message production</td>
+                    </tr>
+                    <tr>
+                        <td>Message Queue</td>
+                        <td>Redis</td>
+                        <td>7.0+</td>
+                        <td>Message broker, temporary storage</td>
+                    </tr>
+                    <tr>
+                        <td>Dequeue Service</td>
+                        <td>Python/Go/Lua</td>
+                        <td>Various</td>
+                        <td>Message consumption, processing</td>
+                    </tr>
+                    <tr>
+                        <td>WAF</td>
+                        <td>IncAE</td>
+                        <td>Latest</td>
+                        <td>Security, input validation</td>
+                    </tr>
+                    <tr>
+                        <td>Relational DB</td>
+                        <td>MySQL</td>
+                        <td>8.0+</td>
+                        <td>Transactional data</td>
+                    </tr>
+                    <tr>
+                        <td>Search Engine</td>
+                        <td>Elasticsearch</td>
+                        <td>8.x</td>
+                        <td>Full-text search, analytics</td>
+                    </tr>
+                    <tr>
+                        <td>Document DB</td>
+                        <td>MongoDB</td>
+                        <td>6.0+</td>
+                        <td>Flexible schema data</td>
+                    </tr>
+                </table>
+                
+                <h3>Deployment Architecture</h3>
+                
+                <h4>Development Environment</h4>
+                <ul>
+                    <li>Docker Compose for local development</li>
+                    <li>Single instance of each service</li>
+                    <li>Local Redis without persistence</li>
+                    <li>Mock databases for testing</li>
+                </ul>
+                
+                <h4>Production Environment</h4>
+                <ul>
+                    <li><strong>Nginx:</strong> 2+ instances with keepalived for HA</li>
+                    <li><strong>Enqueue Services:</strong> 5+ instances behind load balancer</li>
+                    <li><strong>Redis:</strong> Cluster mode with 3+ masters, 3+ replicas</li>
+                    <li><strong>Dequeue Services:</strong> 10+ worker instances (auto-scaled)</li>
+                    <li><strong>Databases:</strong> HA setup with replication and backups</li>
+                </ul>
+                
+                <h3>Configuration Best Practices</h3>
+                
+                <h4>Redis Configuration</h4>
+                <div class="note">
+                    <strong>Recommended Settings:</strong>
+                    <ul>
+                        <li><code>maxmemory-policy: allkeys-lru</code> - Evict least recently used keys</li>
+                        <li><code>appendonly: yes</code> - Enable AOF persistence</li>
+                        <li><code>appendfsync: everysec</code> - Fsync every second</li>
+                        <li><code>tcp-keepalive: 60</code> - Detect dead connections</li>
+                        <li><code>timeout: 300</code> - Close idle connections after 5 minutes</li>
+                    </ul>
+                </div>
+                
+                <h4>Enqueue Service Configuration</h4>
+                <ul>
+                    <li>Connection pool size: 10-50 per instance</li>
+                    <li>Request timeout: 30 seconds</li>
+                    <li>Max request size: 10MB</li>
+                    <li>Rate limiting: 1000 requests/minute per IP</li>
+                </ul>
+                
+                <h4>Dequeue Service Configuration</h4>
+                <ul>
+                    <li>Polling interval: 100ms (blocking pop preferred)</li>
+                    <li>Batch size: 10 messages per fetch</li>
+                    <li>Worker threads: 4-8 per instance</li>
+                    <li>Database connection pool: 20 connections</li>
+                </ul>
+                
+                <h3>Scaling Guidelines</h3>
+                
+                <table>
+                    <tr>
+                        <th>Load Level</th>
+                        <th>Enqueue Instances</th>
+                        <th>Dequeue Instances</th>
+                        <th>Redis Setup</th>
+                    </tr>
+                    <tr>
+                        <td>Low (&lt;1K msg/sec)</td>
+                        <td>2-3</td>
+                        <td>3-5</td>
+                        <td>Single master + replica</td>
+                    </tr>
+                    <tr>
+                        <td>Medium (1K-10K msg/sec)</td>
+                        <td>5-10</td>
+                        <td>10-20</td>
+                        <td>3 master cluster</td>
+                    </tr>
+                    <tr>
+                        <td>High (10K-50K msg/sec)</td>
+                        <td>20-50</td>
+                        <td>50-100</td>
+                        <td>6 master cluster</td>
+                    </tr>
+                    <tr>
+                        <td>Very High (>50K msg/sec)</td>
+                        <td>50+</td>
+                        <td>100+</td>
+                        <td>12+ master cluster + partitioning</td>
+                    </tr>
+                </table>
+                
+                <h3>Security Considerations</h3>
+                <ul>
+                    <li><strong>Authentication:</strong> Redis AUTH, database credentials in secrets manager</li>
+                    <li><strong>Encryption:</strong> TLS for all network communication</li>
+                    <li><strong>Network Isolation:</strong> Services in private subnets</li>
+                    <li><strong>Input Validation:</strong> WAF rules, sanitization at enqueue</li>
+                    <li><strong>Rate Limiting:</strong> Prevent abuse and DDoS attacks</li>
+                    <li><strong>Audit Logging:</strong> Log all operations for compliance</li>
+                </ul>
+                
+                <h3>Maintenance & Operations</h3>
+                
+                <h4>Regular Tasks</h4>
+                <ul>
+                    <li>Monitor queue depth and processing lag</li>
+                    <li>Review DLQ and investigate failures</li>
+                    <li>Analyze error logs and patterns</li>
+                    <li>Update retry thresholds based on metrics</li>
+                    <li>Perform capacity planning reviews</li>
+                </ul>
+                
+                <h4>Disaster Recovery</h4>
+                <ul>
+                    <li>Redis snapshots every 6 hours</li>
+                    <li>AOF logs replicated to multiple regions</li>
+                    <li>Database backups with point-in-time recovery</li>
+                    <li>Documented failover procedures</li>
+                    <li>Regular DR drills (quarterly)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-notes">
+        <div class="footer-content">
+            <h3>📝 Important Notes & References</h3>
+            <ul>
+                <li><strong>RPUSH:</strong> Redis command to push elements to the right (tail) of a list. Used by Enqueue system to add messages to the queue.</li>
+                <li><strong>LPOP:</strong> Redis command to pop elements from the left (head) of a list. Used by Dequeue system to retrieve messages in FIFO order.</li>
+                <li><strong>FIFO Queue:</strong> First In, First Out - ensures messages are processed in the order they were received.</li>
+                <li><strong>Idempotency:</strong> Design dequeue operations to be idempotent - processing same message multiple times should produce same result.</li>
+                <li><strong>Message Ordering:</strong> Redis lists guarantee ordering within a single queue. Use separate queues for different priorities if needed.</li>
+                <li><strong>Monitoring Tools:</strong> Consider using Prometheus + Grafana for metrics, ELK stack for logs, and PagerDuty for alerting.</li>
+                <li><strong>Testing:</strong> Implement chaos engineering practices to test failure scenarios and validate fallback mechanisms.</li>
+                <li><strong>Documentation:</strong> Keep runbooks updated with troubleshooting steps and common issues.</li>
+                <li><strong>Performance Tuning:</strong> Profile each component regularly and optimize bottlenecks. Database indexes are critical.</li>
+                <li><strong>Cost Optimization:</strong> Monitor Redis memory usage and consider data compression for large messages.</li>
+            </ul>
+            
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #475569; color: #94a3b8; font-size: 0.875rem;">
+                <p>Document Version: 1.0 | Last Updated: October 25, 2025</p>
+                <p>For questions or updates, contact the platform engineering team.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
